@@ -16,7 +16,7 @@ void main() async {
     
     runApp(
       const ProviderScope(
-        child: MuvviFitApp(),
+        child: FitnessProApp(),
       ),
     );
   } catch (e) {
@@ -34,15 +34,15 @@ void main() async {
   }
 }
 
-class MuvviFitApp extends ConsumerWidget {
-  const MuvviFitApp({super.key});
+class FitnessProApp extends ConsumerWidget {
+  const FitnessProApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(userProvider);
     
     return MaterialApp(
-      title: 'MuvviFit',
+      title: 'Fitness Pro',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

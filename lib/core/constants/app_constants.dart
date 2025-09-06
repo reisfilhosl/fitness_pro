@@ -33,38 +33,43 @@ class AppConstants {
   static const double borderRadius = 12.0;
   static const double cardElevation = 2.0;
   
-  // Colors
-  static const Color primaryColor = Color(0xFFE53935);
+  // Colors - Apple Style
+  static const Color primaryColor = Color(0xFF007AFF); // Azul iOS
+  static const Color secondaryColor = Color(0xFF5856D6); // Roxo iOS
+  static const Color accentColor = Color(0xFFFF9500); // Laranja iOS
+  static const Color successColor = Color(0xFF34C759); // Verde iOS
+  static const Color warningColor = Color(0xFFFF9500); // Laranja iOS
+  static const Color errorColor = Color(0xFFFF3B30); // Vermelho iOS
   
   // Animation Durations
   static const Duration shortAnimation = Duration(milliseconds: 200);
   static const Duration mediumAnimation = Duration(milliseconds: 300);
   static const Duration longAnimation = Duration(milliseconds: 500);
   
-  // Chart Colors
+  // Chart Colors - Apple Style
   static const List<int> chartColors = [
-    0xFFE53935, // Vermelho principal
-    0xFF2196F3, // Azul
-    0xFF4CAF50, // Verde
-    0xFFFF9800, // Laranja
-    0xFF9C27B0, // Roxo
-    0xFF00BCD4, // Ciano
-    0xFFFFC107, // Amarelo
-    0xFF795548, // Marrom
+    0xFF007AFF, // Azul iOS
+    0xFF5856D6, // Roxo iOS
+    0xFF34C759, // Verde iOS
+    0xFFFF9500, // Laranja iOS
+    0xFFFF3B30, // Vermelho iOS
+    0xFF5AC8FA, // Azul claro iOS
+    0xFFFF2D92, // Rosa iOS
+    0xFF8E8E93, // Cinza iOS
   ];
   
-  // Muscle Group Colors
+  // Muscle Group Colors - Apple Style
   static const Map<String, int> muscleGroupColors = {
-    'chest': 0xFFE53935,
-    'back': 0xFF2196F3,
-    'shoulders': 0xFF4CAF50,
-    'arms': 0xFFFF9800,
-    'legs': 0xFF9C27B0,
-    'core': 0xFF00BCD4,
-    'glutes': 0xFFFFC107,
-    'calves': 0xFF795548,
-    'fullBody': 0xFF607D8B,
-    'cardio': 0xFFE91E63,
+    'chest': 0xFF007AFF, // Azul iOS
+    'back': 0xFF5856D6, // Roxo iOS
+    'shoulders': 0xFF34C759, // Verde iOS
+    'arms': 0xFFFF9500, // Laranja iOS
+    'legs': 0xFFFF3B30, // Vermelho iOS
+    'core': 0xFF5AC8FA, // Azul claro iOS
+    'glutes': 0xFFFF2D92, // Rosa iOS
+    'calves': 0xFF8E8E93, // Cinza iOS
+    'fullBody': 0xFF007AFF, // Azul iOS
+    'cardio': 0xFF34C759, // Verde iOS
   };
   
   // Exercise Categories
