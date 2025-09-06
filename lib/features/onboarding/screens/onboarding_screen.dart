@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/models/user.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/widgets/app_logo.dart';
 import '../widgets/onboarding_form.dart';
 
 class OnboardingScreen extends ConsumerStatefulWidget {
@@ -126,10 +127,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.fitness_center,
-            size: 120,
-            color: AppConstants.primaryColor,
+          const AppLogo(
+            width: 120,
+            height: 120,
           ),
           const SizedBox(height: AppConstants.largePadding),
           Text(

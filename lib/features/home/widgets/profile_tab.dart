@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/widgets/app_logo.dart';
 import '../../../shared/widgets/badge_grid.dart';
 import '../../profile/screens/edit_profile_screen.dart';
 import '../../profile/screens/settings_screen.dart';
@@ -50,7 +51,7 @@ class ProfileTab extends ConsumerWidget {
         child: Column(
           children: [
             // Card do Usuário
-            _buildUserCard(context, user, latestWeight),
+            _buildUserCard(context, ref, user, latestWeight),
             
             const SizedBox(height: AppConstants.largePadding),
             
@@ -65,15 +66,16 @@ class ProfileTab extends ConsumerWidget {
             const SizedBox(height: AppConstants.largePadding),
             
             // Ações
-            _buildActionsSection(context),
+            _buildActionsSection(context, ref),
           ],
         ),
       ),
     );
   }
 
-  Widget _buildUserCard(BuildContext context, user, latestWeight) {
+  Widget _buildUserCard(BuildContext context, WidgetRef ref, user, latestWeight) {
     return Card(
+      margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Column(
@@ -112,10 +114,34 @@ class ProfileTab extends ConsumerWidget {
                         style: Theme.of(context).textTheme.bodyMedium,
                       ),
                       if (latestWeight != null)
-                        Text(
-                          '${latestWeight.weight.toStringAsFixed(1)}kg',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[600],
+                        Row(
+                          children: [
+                            Text(
+                              '${latestWeight.weight.toStringAsFixed(1)}kg',
+                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            GestureDetector(
+                              onTap: () => _showWeightDialog(context, ref),
+                              child: Icon(
+                                Icons.edit,
+                                size: 16,
+                                color: Theme.of(context).colorScheme.primary,
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        GestureDetector(
+                          onTap: () => _showWeightDialog(context, ref),
+                          child: Text(
+                            'Adicionar peso',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              decoration: TextDecoration.underline,
+                            ),
                           ),
                         ),
                     ],
@@ -141,29 +167,44 @@ class ProfileTab extends ConsumerWidget {
   }
 
   Widget _buildStatsSection(BuildContext context, user, totalWorkouts, totalWeightEntries) {
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
       child: Padding(
-        padding: const EdgeInsets.all(AppConstants.defaultPadding),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Estatísticas',
-              style: Theme.of(context).textTheme.titleLarge,
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            const SizedBox(height: AppConstants.defaultPadding),
+            const SizedBox(height: 24),
+            // Primeira linha - Métricas principais
             Row(
               children: [
-                Flexible(
+                Expanded(
                   child: _buildStatItem(
                     context,
                     'Treinos',
                     totalWorkouts.toString(),
                     Icons.fitness_center,
-                    AppConstants.primaryColor,
+                    Theme.of(context).colorScheme.primary,
                   ),
                 ),
-                Flexible(
+                SizedBox(width: 10),
+                Expanded(
                   child: _buildStatItem(
                     context,
                     'XP Total',
@@ -172,21 +213,23 @@ class ProfileTab extends ConsumerWidget {
                     Colors.amber,
                   ),
                 ),
-                Flexible(
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Segunda linha - Streaks
+            Row(
+              children: [
+                Expanded(
                   child: _buildStatItem(
                     context,
-                    'Streak',
+                    'Streak Atual',
                     '${user.currentStreak} dias',
                     Icons.local_fire_department,
                     Colors.orange,
                   ),
                 ),
-              ],
-            ),
-            const SizedBox(height: AppConstants.defaultPadding),
-            Row(
-              children: [
-                Flexible(
+                SizedBox(width: 10),
+                Expanded(
                   child: _buildStatItem(
                     context,
                     'Maior Streak',
@@ -195,7 +238,13 @@ class ProfileTab extends ConsumerWidget {
                     Colors.green,
                   ),
                 ),
-                Flexible(
+              ],
+            ),
+            const SizedBox(height: 20),
+            // Terceira linha - Outros dados
+            Row(
+              children: [
+                Expanded(
                   child: _buildStatItem(
                     context,
                     'Registros de Peso',
@@ -204,7 +253,8 @@ class ProfileTab extends ConsumerWidget {
                     Colors.blue,
                   ),
                 ),
-                Flexible(
+                SizedBox(width: 10),
+                Expanded(
                   child: _buildStatItem(
                     context,
                     'Membro desde',
@@ -222,23 +272,41 @@ class ProfileTab extends ConsumerWidget {
   }
 
   Widget _buildStatItem(BuildContext context, String label, String value, IconData icon, Color color) {
-    return Column(
-      children: [
-        Icon(icon, color: color, size: 24),
-        const SizedBox(height: 8),
-        Text(
-          value,
-          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-            fontWeight: FontWeight.bold,
-            color: color,
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(icon, color: color, size: 24),
           ),
-        ),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodySmall,
-          textAlign: TextAlign.center,
-        ),
-      ],
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF1C1C1E),
+            ),
+          ),
+          const SizedBox(height: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+              color: const Color(0xFF8E8E93),
+              fontWeight: FontWeight.w500,
+            ),
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
     );
   }
 
@@ -246,6 +314,7 @@ class ProfileTab extends ConsumerWidget {
     final badges = ref.watch(badgesProvider);
     
     return Card(
+      margin: EdgeInsets.zero,
       child: Padding(
         padding: const EdgeInsets.all(AppConstants.defaultPadding),
         child: Column(
@@ -280,8 +349,9 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionsSection(BuildContext context) {
+  Widget _buildActionsSection(BuildContext context, WidgetRef ref) {
     return Card(
+      margin: EdgeInsets.zero,
       child: Column(
         children: [
           _buildActionTile(
@@ -342,7 +412,7 @@ class ProfileTab extends ConsumerWidget {
             'Encerrar sessão',
             Icons.logout,
             () {
-              _showLogoutDialog(context);
+              _showLogoutDialog(context, ref);
             },
             isDestructive: true,
           ),
@@ -381,10 +451,9 @@ class ProfileTab extends ConsumerWidget {
       context: context,
       applicationName: 'MuvviFit',
       applicationVersion: '1.0.0',
-      applicationIcon: Icon(
-        Icons.fitness_center,
-        size: 48,
-        color: AppConstants.primaryColor,
+      applicationIcon: const AppLogo(
+        width: 48,
+        height: 48,
       ),
       children: [
         const Text('Seu companheiro de treino minimalista e moderno.'),
@@ -394,7 +463,7 @@ class ProfileTab extends ConsumerWidget {
     );
   }
 
-  void _showLogoutDialog(BuildContext context) {
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -407,10 +476,86 @@ class ProfileTab extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () {
-              // TODO: Implementar logout
               Navigator.of(context).pop();
+              _performLogout(context, ref);
             },
             child: const Text('Sair', style: TextStyle(color: Colors.red)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _performLogout(BuildContext context, WidgetRef ref) {
+    // Limpar dados do usuário
+    ref.read(userProvider.notifier).clearUser();
+    
+    // Mostrar mensagem de confirmação
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Sessão encerrada com sucesso'),
+        backgroundColor: Colors.green,
+      ),
+    );
+  }
+
+  void _showWeightDialog(BuildContext context, WidgetRef ref) {
+    final weightController = TextEditingController();
+    final weightEntries = ref.read(weightEntriesProvider);
+    final latestWeight = weightEntries.isNotEmpty 
+        ? weightEntries.reduce((a, b) => a.date.isAfter(b.date) ? a : b)
+        : null;
+
+    if (latestWeight != null) {
+      weightController.text = latestWeight.weight.toString();
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Registrar Peso'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: weightController,
+              keyboardType: TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Peso (kg)',
+                prefixIcon: Icon(Icons.monitor_weight),
+                suffixText: 'kg',
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () {
+              final weight = double.tryParse(weightController.text);
+              if (weight != null && weight > 0 && weight < 500) {
+                // Adicionar novo registro de peso
+                ref.read(weightEntriesProvider.notifier).addWeightEntryByValue(weight);
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Peso registrado com sucesso!'),
+                    backgroundColor: Colors.green,
+                  ),
+                );
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Peso inválido. Digite um valor entre 0 e 500kg'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text('Salvar'),
           ),
         ],
       ),

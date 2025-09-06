@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
+import '../../../shared/providers/app_providers.dart';
+import 'notification_settings_screen.dart';
 
 class SettingsScreen extends ConsumerStatefulWidget {
   const SettingsScreen({super.key});
@@ -11,12 +13,13 @@ class SettingsScreen extends ConsumerStatefulWidget {
 
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationsEnabled = true;
-  bool _darkModeEnabled = false;
   String _weightUnit = 'kg';
   String _distanceUnit = 'km';
 
   @override
   Widget build(BuildContext context) {
+    final themeMode = ref.watch(themeModeProvider);
+    
     return Scaffold(
       appBar: AppBar(
         title: const Text('Configurações'),
@@ -49,11 +52,32 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _buildSection(
             'Aparência',
             [
-              _buildSwitchTile(
+              _buildThemeTile(
                 'Modo escuro',
-                'Usar tema escuro',
-                _darkModeEnabled,
-                (value) => setState(() => _darkModeEnabled = value),
+                'Escolher tema do aplicativo',
+                themeMode,
+                (value) => ref.read(themeModeProvider.notifier).setThemeMode(value),
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: AppConstants.largePadding),
+          
+          // Notificações
+          _buildSection(
+            'Notificações',
+            [
+              _buildActionTile(
+                'Configurar notificações',
+                'Gerenciar lembretes e notificações',
+                Icons.notifications,
+                () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const NotificationSettingsScreen(),
+                    ),
+                  );
+                },
               ),
             ],
           ),
@@ -165,6 +189,36 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         value: value,
         onChanged: onChanged,
         activeColor: AppConstants.primaryColor,
+      ),
+    );
+  }
+
+  Widget _buildThemeTile(
+    String title,
+    String subtitle,
+    ThemeMode currentMode,
+    Function(ThemeMode) onChanged,
+  ) {
+    return ListTile(
+      title: Text(title),
+      subtitle: Text(subtitle),
+      trailing: DropdownButton<ThemeMode>(
+        value: currentMode,
+        onChanged: (value) => onChanged(value!),
+        items: const [
+          DropdownMenuItem(
+            value: ThemeMode.system,
+            child: Text('Sistema'),
+          ),
+          DropdownMenuItem(
+            value: ThemeMode.light,
+            child: Text('Claro'),
+          ),
+          DropdownMenuItem(
+            value: ThemeMode.dark,
+            child: Text('Escuro'),
+          ),
+        ],
       ),
     );
   }

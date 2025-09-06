@@ -56,17 +56,41 @@ class ActivityTab extends ConsumerWidget {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        heroTag: "activity_fab",
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => const AddWorkoutScreen(),
+      floatingActionButton: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Theme.of(context).colorScheme.primary.withOpacity(0.3),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
             ),
-          );
-        },
-        icon: const Icon(Icons.add),
-        label: const Text('Novo Treino'),
+          ],
+        ),
+        child: FloatingActionButton.extended(
+          heroTag: "activity_fab",
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const AddWorkoutScreen(),
+              ),
+            );
+          },
+          icon: const Icon(Icons.add, size: 20),
+          label: const Text(
+            'Novo Treino',
+            style: TextStyle(
+              fontWeight: FontWeight.w600,
+              fontSize: 16,
+            ),
+          ),
+          backgroundColor: Theme.of(context).colorScheme.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+        ),
       ),
     );
   }
@@ -81,7 +105,7 @@ class ActivityTab extends ConsumerWidget {
         .toList();
 
     return Container(
-      margin: const EdgeInsets.all(AppConstants.defaultPadding),
+      margin: const EdgeInsets.all(0),
       child: Card(
         elevation: 4,
         child: Padding(
@@ -364,13 +388,13 @@ class ActivityTab extends ConsumerWidget {
           onSelected: (value) {
             switch (value) {
               case 'view':
-                // TODO: Navegar para detalhes
+                _showWorkoutDetails(context, workout);
                 break;
               case 'edit':
-                // TODO: Editar treino
+                _editWorkout(context, workout);
                 break;
               case 'duplicate':
-                // TODO: Duplicar treino
+                _duplicateWorkout(context, workout);
                 break;
               case 'delete':
                 _showDeleteDialog(context, workout);
@@ -379,8 +403,189 @@ class ActivityTab extends ConsumerWidget {
           },
         ),
         onTap: () {
-          // TODO: Navegar para detalhes do treino
+          _showWorkoutDetails(context, workout);
         },
+      ),
+    );
+  }
+
+  void _showWorkoutDetails(BuildContext context, workout) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => Container(
+        height: MediaQuery.of(context).size.height * 0.8,
+        decoration: BoxDecoration(
+          color: Theme.of(context).colorScheme.surface,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.symmetric(vertical: 12),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                children: [
+                  Text(
+                    'Detalhes do Treino',
+                    style: Theme.of(context).textTheme.headlineSmall,
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    icon: const Icon(Icons.close),
+                  ),
+                ],
+              ),
+            ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildDetailCard(
+                      context,
+                      'Data e Hora',
+                      DateFormat('dd/MM/yyyy HH:mm').format(workout.date),
+                      Icons.calendar_today,
+                    ),
+                    _buildDetailCard(
+                      context,
+                      'Exercícios',
+                      '${workout.exercises.length} exercícios',
+                      Icons.fitness_center,
+                    ),
+                    _buildDetailCard(
+                      context,
+                      'Volume Total',
+                      '${workout.totalVolume.toStringAsFixed(0)}kg',
+                      Icons.scale,
+                    ),
+                    if (workout.duration != null)
+                      _buildDetailCard(
+                        context,
+                        'Duração',
+                        '${workout.duration!.inMinutes} minutos',
+                        Icons.timer,
+                      ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Exercícios',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    const SizedBox(height: 8),
+                    ...workout.exercises.map((exercise) => _buildExerciseItem(context, exercise)),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildDetailCard(BuildContext context, String title, String value, IconData icon) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.primary.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(icon, color: Theme.of(context).colorScheme.primary),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: const Color(0xFF8E8E93),
+                  ),
+                ),
+                Text(
+                  value,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExerciseItem(BuildContext context, exercise) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE5E5EA)),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.fitness_center,
+            color: Theme.of(context).colorScheme.primary,
+            size: 20,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  exercise.name,
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                Text(
+                  '${exercise.sets.length} séries',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: const Color(0xFF8E8E93),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _editWorkout(BuildContext context, workout) {
+    // TODO: Implementar edição de treino
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Funcionalidade de edição será implementada em breve'),
+      ),
+    );
+  }
+
+  void _duplicateWorkout(BuildContext context, workout) {
+    // TODO: Implementar duplicação de treino
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Funcionalidade de duplicação será implementada em breve'),
       ),
     );
   }
@@ -400,6 +605,11 @@ class ActivityTab extends ConsumerWidget {
             onPressed: () {
               // TODO: Implementar exclusão
               Navigator.of(context).pop();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Funcionalidade de exclusão será implementada em breve'),
+                ),
+              );
             },
             child: const Text('Excluir', style: TextStyle(color: Colors.red)),
           ),

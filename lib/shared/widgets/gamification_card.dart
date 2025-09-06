@@ -23,10 +23,13 @@ class GamificationCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final xpForNextLevel = GamificationService.calculateXPForNextLevel(level);
-    final levelProgress = GamificationService.calculateLevelProgress(totalXP, level);
+    final levelProgress = GamificationService.calculateLevelProgress(
+      totalXP,
+      level,
+    );
 
     return Card(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(0),
       child: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -72,24 +75,29 @@ class GamificationCard extends ConsumerWidget {
                     ],
                   ),
                 ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: AppConstants.primaryColor.withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Text(
-                    '$badgesCount badges',
-                    style: theme.textTheme.bodySmall?.copyWith(
-                      color: AppConstants.primaryColor,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+                badgesCount != 0
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppConstants.primaryColor.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                        child: Text(
+                          '$badgesCount badges',
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: AppConstants.primaryColor,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      )
+                    : const SizedBox.shrink(),
               ],
             ),
             const SizedBox(height: 20),
-            
+
             // Progress Bar
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,7 +123,9 @@ class GamificationCard extends ConsumerWidget {
                 LinearProgressIndicator(
                   value: levelProgress,
                   backgroundColor: theme.colorScheme.surfaceVariant,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppConstants.primaryColor),
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    AppConstants.primaryColor,
+                  ),
                   minHeight: 8,
                 ),
                 const SizedBox(height: 4),
@@ -127,9 +137,9 @@ class GamificationCard extends ConsumerWidget {
                 ),
               ],
             ),
-            
+
             const SizedBox(height: 20),
-            
+
             // Streak Info
             Row(
               children: [
@@ -168,7 +178,7 @@ class GamificationCard extends ConsumerWidget {
     String unit,
   ) {
     final theme = Theme.of(context);
-    
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -177,10 +187,7 @@ class GamificationCard extends ConsumerWidget {
       ),
       child: Column(
         children: [
-          Text(
-            icon,
-            style: const TextStyle(fontSize: 24),
-          ),
+          Text(icon, style: const TextStyle(fontSize: 24)),
           const SizedBox(height: 8),
           Text(
             value,
@@ -210,4 +217,3 @@ class GamificationCard extends ConsumerWidget {
     );
   }
 }
-

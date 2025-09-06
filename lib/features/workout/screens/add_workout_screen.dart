@@ -4,6 +4,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/models/workout.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/providers/gamification_provider.dart';
 import '../widgets/exercise_selection_widget.dart';
 import '../widgets/workout_exercise_card.dart';
 
@@ -211,18 +212,17 @@ class _AddWorkoutScreenState extends ConsumerState<AddWorkoutScreen> {
 
     await ref.read(workoutsProvider.notifier).addWorkout(workout);
     
-    // Atualizar streak do usuário
-    await ref.read(userProvider.notifier).updateStreak();
+    // Adicionar XP e verificar badges usando o sistema de gamificação
+    await ref.read(gamificationProvider.notifier).addWorkoutXP(workout);
     
-    // Adicionar XP baseado no volume
-    final xp = AppConstants.baseXPPerWorkout + (totalVolume * 0.1).round();
-    await ref.read(userProvider.notifier).addXP(xp);
+    // Atualizar streak
+    await ref.read(gamificationProvider.notifier).updateStreak();
 
     if (mounted) {
       Navigator.of(context).pop();
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Treino salvo! +$xp XP'),
+        const SnackBar(
+          content: Text('Treino salvo! XP adicionado!'),
           backgroundColor: AppConstants.primaryColor,
         ),
       );

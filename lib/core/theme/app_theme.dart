@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   // Cores principais estilo Apple
@@ -16,13 +17,14 @@ class AppTheme {
   // Cores para dark mode
   static const Color darkBackgroundColor = Color(0xFF000000);
   static const Color darkSurfaceColor = Color(0xFF1C1C1E);
-  static const Color darkPrimaryColor = Color(0xFF0A84FF);
+  static const Color darkPrimaryColor = Color(0xFF007AFF); // Azul iOS
   static const Color darkSecondaryColor = Color(0xFF5E5CE6);
   static const Color darkAccentColor = Color(0xFFFF9F0A);
 
   static ThemeData get lightTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: GoogleFonts.urbanist().fontFamily,
       colorScheme: ColorScheme.fromSeed(
         seedColor: primaryColor,
         brightness: Brightness.light,
@@ -34,12 +36,12 @@ class AppTheme {
         tertiary: accentColor,
       ),
       scaffoldBackgroundColor: backgroundColor,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.black,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.urbanist(
           fontSize: 34,
           fontWeight: FontWeight.bold,
           color: Colors.black,
@@ -114,82 +116,82 @@ class AppTheme {
           fontSize: 17,
         ),
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
+      textTheme: GoogleFonts.urbanistTextTheme().copyWith(
+        headlineLarge: GoogleFonts.urbanist(
           fontSize: 34,
           fontWeight: FontWeight.bold,
           color: Colors.black,
           letterSpacing: -0.5,
           height: 1.2,
         ),
-        headlineMedium: TextStyle(
+        headlineMedium: GoogleFonts.urbanist(
           fontSize: 28,
           fontWeight: FontWeight.bold,
           color: Colors.black,
           letterSpacing: -0.4,
           height: 1.2,
         ),
-        headlineSmall: TextStyle(
+        headlineSmall: GoogleFonts.urbanist(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: Colors.black,
           letterSpacing: -0.3,
           height: 1.3,
         ),
-        titleLarge: TextStyle(
+        titleLarge: GoogleFonts.urbanist(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.black,
           letterSpacing: -0.2,
           height: 1.3,
         ),
-        titleMedium: TextStyle(
+        titleMedium: GoogleFonts.urbanist(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           color: Colors.black,
           letterSpacing: -0.1,
           height: 1.3,
         ),
-        titleSmall: TextStyle(
+        titleSmall: GoogleFonts.urbanist(
           fontSize: 15,
           fontWeight: FontWeight.w500,
           color: Colors.black,
           height: 1.3,
         ),
-        bodyLarge: TextStyle(
+        bodyLarge: GoogleFonts.urbanist(
           fontSize: 17,
           fontWeight: FontWeight.w400,
           color: Colors.black,
           height: 1.4,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: GoogleFonts.urbanist(
           fontSize: 15,
           fontWeight: FontWeight.w400,
           color: Colors.black,
           height: 1.4,
         ),
-        bodySmall: TextStyle(
+        bodySmall: GoogleFonts.urbanist(
           fontSize: 13,
           fontWeight: FontWeight.w400,
-          color: Color(0xFF8E8E93),
+          color: const Color(0xFF8E8E93),
           height: 1.4,
         ),
-        labelLarge: TextStyle(
+        labelLarge: GoogleFonts.urbanist(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           color: primaryColor,
           height: 1.3,
         ),
-        labelMedium: TextStyle(
+        labelMedium: GoogleFonts.urbanist(
           fontSize: 15,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF8E8E93),
+          color: const Color(0xFF8E8E93),
           height: 1.3,
         ),
-        labelSmall: TextStyle(
+        labelSmall: GoogleFonts.urbanist(
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF8E8E93),
+          color: const Color(0xFF8E8E93),
           height: 1.3,
         ),
       ),
@@ -199,10 +201,11 @@ class AppTheme {
   static ThemeData get darkTheme {
     return ThemeData(
       useMaterial3: true,
+      fontFamily: GoogleFonts.urbanist().fontFamily,
       colorScheme: ColorScheme.fromSeed(
         seedColor: darkPrimaryColor,
         brightness: Brightness.dark,
-        primary: darkPrimaryColor,
+        primary: darkPrimaryColor, // Azul #007AFF
         secondary: darkSecondaryColor,
         surface: darkSurfaceColor,
         background: darkBackgroundColor,
@@ -210,12 +213,12 @@ class AppTheme {
         tertiary: darkAccentColor,
       ),
       scaffoldBackgroundColor: darkBackgroundColor,
-      appBarTheme: const AppBarTheme(
+      appBarTheme: AppBarTheme(
         centerTitle: false,
         elevation: 0,
         backgroundColor: Colors.transparent,
         foregroundColor: Colors.white,
-        titleTextStyle: TextStyle(
+        titleTextStyle: GoogleFonts.urbanist(
           fontSize: 34,
           fontWeight: FontWeight.bold,
           color: Colors.white,
@@ -290,82 +293,82 @@ class AppTheme {
           fontSize: 17,
         ),
       ),
-      textTheme: const TextTheme(
-        headlineLarge: TextStyle(
+      textTheme: GoogleFonts.urbanistTextTheme().copyWith(
+        headlineLarge: GoogleFonts.urbanist(
           fontSize: 34,
           fontWeight: FontWeight.bold,
           color: Colors.white,
           letterSpacing: -0.5,
           height: 1.2,
         ),
-        headlineMedium: TextStyle(
+        headlineMedium: GoogleFonts.urbanist(
           fontSize: 28,
           fontWeight: FontWeight.bold,
           color: Colors.white,
           letterSpacing: -0.4,
           height: 1.2,
         ),
-        headlineSmall: TextStyle(
+        headlineSmall: GoogleFonts.urbanist(
           fontSize: 22,
           fontWeight: FontWeight.w600,
           color: Colors.white,
           letterSpacing: -0.3,
           height: 1.3,
         ),
-        titleLarge: TextStyle(
+        titleLarge: GoogleFonts.urbanist(
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: Colors.white,
           letterSpacing: -0.2,
           height: 1.3,
         ),
-        titleMedium: TextStyle(
+        titleMedium: GoogleFonts.urbanist(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           color: Colors.white,
           letterSpacing: -0.1,
           height: 1.3,
         ),
-        titleSmall: TextStyle(
+        titleSmall: GoogleFonts.urbanist(
           fontSize: 15,
           fontWeight: FontWeight.w500,
           color: Colors.white,
           height: 1.3,
         ),
-        bodyLarge: TextStyle(
+        bodyLarge: GoogleFonts.urbanist(
           fontSize: 17,
           fontWeight: FontWeight.w400,
           color: Colors.white,
           height: 1.4,
         ),
-        bodyMedium: TextStyle(
+        bodyMedium: GoogleFonts.urbanist(
           fontSize: 15,
           fontWeight: FontWeight.w400,
           color: Colors.white,
           height: 1.4,
         ),
-        bodySmall: TextStyle(
+        bodySmall: GoogleFonts.urbanist(
           fontSize: 13,
           fontWeight: FontWeight.w400,
-          color: Color(0xFF8E8E93),
+          color: const Color(0xFF8E8E93),
           height: 1.4,
         ),
-        labelLarge: TextStyle(
+        labelLarge: GoogleFonts.urbanist(
           fontSize: 17,
           fontWeight: FontWeight.w600,
           color: darkPrimaryColor,
           height: 1.3,
         ),
-        labelMedium: TextStyle(
+        labelMedium: GoogleFonts.urbanist(
           fontSize: 15,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF8E8E93),
+          color: const Color(0xFF8E8E93),
           height: 1.3,
         ),
-        labelSmall: TextStyle(
+        labelSmall: GoogleFonts.urbanist(
           fontSize: 13,
           fontWeight: FontWeight.w500,
-          color: Color(0xFF8E8E93),
+          color: const Color(0xFF8E8E93),
           height: 1.3,
         ),
       ),

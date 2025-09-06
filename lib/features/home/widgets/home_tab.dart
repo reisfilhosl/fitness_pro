@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../shared/providers/app_providers.dart';
+import '../../../shared/providers/gamification_provider.dart';
+import '../../../shared/widgets/app_logo.dart';
 import '../../../shared/widgets/gamification_card.dart';
 import '../../workout/screens/add_workout_screen.dart';
 
@@ -13,6 +15,7 @@ class HomeTab extends ConsumerWidget {
     final user = ref.watch(userProvider);
     final workouts = ref.watch(workoutsProvider);
     final weightEntries = ref.watch(weightEntriesProvider);
+    final gamificationStats = ref.watch(gamificationProvider);
 
     if (user == null) {
       return const Scaffold(
@@ -31,9 +34,15 @@ class HomeTab extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Olá, ${user.name.split(' ').first}!',
-          style: Theme.of(context).textTheme.headlineLarge,
+        title: Row(
+          children: [
+            const AppLogo(width: 32, height: 32),
+            const SizedBox(width: 12),
+            Text(
+              'Olá, ${user.name.split(' ').first}!',
+              style: Theme.of(context).textTheme.headlineLarge,
+            ),
+          ],
         ),
         actions: [
           Container(
@@ -68,18 +77,19 @@ class HomeTab extends ConsumerWidget {
           children: [
             // Card de Gamificação
             GamificationCard(
-              level: user.level,
-              totalXP: user.totalXP,
-              currentStreak: user.currentStreak,
+              level: gamificationStats['level'] ?? user.level,
+              totalXP: gamificationStats['totalXP'] ?? user.totalXP,
+              currentStreak: gamificationStats['streak'] ?? user.currentStreak,
               longestStreak: user.longestStreak,
-              badgesCount: 0, // TODO: Implementar contagem de badges
+              badgesCount: gamificationStats['unlockedBadges'] ?? 0,
             ),
             
             const SizedBox(height: AppConstants.largePadding),
             
             // Cards de Progresso
             _buildProgressCards(context, user, latestWeight, totalVolume),
-            
+            const SizedBox(height: AppConstants.largePadding),
+
             // Treinos Recentes
             _buildRecentWorkouts(context, recentWorkouts),
             

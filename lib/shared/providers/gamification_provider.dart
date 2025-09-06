@@ -1,89 +1,109 @@
-import 'package:riverpod_annotation/riverpod_annotation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/services/gamification_service.dart';
-import '../../core/services/hive_service.dart';
 import '../models/user.dart';
 import '../models/workout.dart';
 import '../models/badge.dart';
+import 'app_providers.dart';
 
-part 'gamification_provider.g.dart';
+// Gamification Provider
+final gamificationProvider = StateNotifierProvider<GamificationNotifier, Map<String, dynamic>>((ref) {
+  return GamificationNotifier(ref);
+});
 
-@riverpod
-class GamificationNotifier extends _$GamificationNotifier {
-  @override
-  Future<Map<String, dynamic>> build() async {
-    // Retorna estatísticas vazias por padrão
-    return {};
+class GamificationNotifier extends StateNotifier<Map<String, dynamic>> {
+  final Ref _ref;
+  
+  GamificationNotifier(this._ref) : super({}) {
+    _updateStats();
+  }
+
+  void _updateStats() {
+    final user = _ref.read(userProvider);
+    final workouts = _ref.read(workoutsProvider);
+    final badges = _ref.read(badgesProvider);
+    
+    if (user != null) {
+      final stats = GamificationService.calculateGamificationStats(user, workouts);
+      state = {
+        ...stats,
+        'badgesCount': badges.length,
+        'unlockedBadges': badges.where((b) => b.unlockedAt != null).length,
+      };
+    }
   }
 
   /// Atualiza estatísticas de gamificação do usuário
-  Future<void> updateStats(String userId) async {
-    final stats = HiveService.getUserGamificationStats(userId);
-    state = AsyncValue.data(stats);
+  Future<void> updateStats() async {
+    _updateStats();
   }
 
   /// Adiciona XP ao usuário após um treino
-  Future<void> addWorkoutXP(String userId, Workout workout) async {
-    final xp = GamificationService.calculateWorkoutXP(workout);
-    await HiveService.addXPToUser(userId, xp);
+  Future<void> addWorkoutXP(Workout workout) async {
+    final user = _ref.read(userProvider);
+    if (user == null) return;
+
+    // Calcula XP do treino
+    final workoutXP = GamificationService.calculateWorkoutXP(workout);
+    final newTotalXP = user.totalXP + workoutXP;
+    final newLevel = GamificationService.calculateLevel(newTotalXP);
     
-    // Atualiza as estatísticas
-    await updateStats(userId);
+    // Atualiza usuário
+    final updatedUser = user.copyWith(
+      totalXP: newTotalXP,
+      level: newLevel,
+      totalWorkouts: user.totalWorkouts + 1,
+      lastWorkoutDate: workout.date,
+    );
+    
+    await _ref.read(userProvider.notifier).updateUser(updatedUser);
+    
+    // Verifica novos badges
+    await _checkForNewBadges(updatedUser, workout);
+    
+    // Atualiza estatísticas
+    _updateStats();
   }
 
   /// Atualiza streak do usuário
-  Future<void> updateStreak(String userId, int newStreak) async {
-    await HiveService.updateUserStreak(userId, newStreak);
-    await updateStats(userId);
+  Future<void> updateStreak() async {
+    final user = _ref.read(userProvider);
+    final workouts = _ref.read(workoutsProvider);
+    
+    if (user == null) return;
+
+    final currentStreak = GamificationService.calculateWorkoutStreak(workouts);
+    final longestStreak = currentStreak > user.longestStreak ? currentStreak : user.longestStreak;
+    
+    final updatedUser = user.copyWith(
+      currentStreak: currentStreak,
+      longestStreak: longestStreak,
+    );
+    
+    await _ref.read(userProvider.notifier).updateUser(updatedUser);
+    _updateStats();
   }
 
   /// Adiciona badge ao usuário
-  Future<void> addBadge(String userId, Badge badge) async {
-    await HiveService.addBadgeToUser(userId, badge);
-    await updateStats(userId);
+  Future<void> addBadge(Badge badge) async {
+    await _ref.read(badgesProvider.notifier).addBadge(badge);
+    _updateStats();
   }
 
   /// Verifica e adiciona novos badges
-  Future<List<Badge>> checkForNewBadges(String userId, User user, List<Workout> workouts) async {
-    final userBadges = HiveService.getUserBadges(userId);
-    final existingBadges = userBadges.map((ub) => HiveService.getBadge(ub.badgeId)).where((b) => b != null).cast<Badge>().toList();
+  Future<void> _checkForNewBadges(User user, Workout workout) async {
+    final workouts = _ref.read(workoutsProvider);
+    final existingBadges = _ref.read(badgesProvider);
+    
     final newBadges = GamificationService.checkForNewBadges(user, workouts, existingBadges);
     
-    // Adiciona os novos badges
     for (final badge in newBadges) {
-      await addBadge(userId, badge);
+      await addBadge(badge);
     }
-    
-    return newBadges;
   }
 
   /// Calcula estatísticas completas de gamificação
-  Future<Map<String, dynamic>> calculateFullStats(String userId, User user, List<Workout> workouts) async {
+  Map<String, dynamic> calculateFullStats(User user, List<Workout> workouts) {
     return GamificationService.calculateGamificationStats(user, workouts);
   }
 }
 
-@riverpod
-class UserBadgesNotifier extends _$UserBadgesNotifier {
-  @override
-  Future<List<Badge>> build() async {
-    return [];
-  }
-
-  /// Carrega badges do usuário
-  Future<void> loadUserBadges(String userId) async {
-    state = const AsyncValue.loading();
-    try {
-      final userBadges = HiveService.getUserBadges(userId);
-      final badges = userBadges.map((ub) => HiveService.getBadge(ub.badgeId)).where((b) => b != null).cast<Badge>().toList();
-      state = AsyncValue.data(badges);
-    } catch (error, stackTrace) {
-      state = AsyncValue.error(error, stackTrace);
-    }
-  }
-
-  /// Adiciona um novo badge
-  Future<void> addBadge(String userId, Badge badge) async {
-    await HiveService.addBadgeToUser(userId, badge);
-    await loadUserBadges(userId);
-  }
-}

@@ -6,6 +6,7 @@ import '../../shared/models/user.dart';
 import '../../shared/models/weight_entry.dart';
 import '../../shared/models/badge.dart';
 import '../../shared/models/user_badge.dart';
+import '../../shared/models/workout_template.dart';
 
 class HiveService {
   static const String _userBoxName = 'user';
@@ -21,6 +22,7 @@ class HiveService {
   static Box<WeightEntry>? _weightEntriesBox;
   static Box<Badge>? _badgesBox;
   static Box<UserBadge>? _userBadgesBox;
+  static Box<WorkoutTemplate>? _workoutTemplatesBox;
 
   static Future<void> init() async {
     try {
@@ -45,6 +47,11 @@ class HiveService {
       Hive.registerAdapter(BadgeAdapter());
       Hive.registerAdapter(BadgeRarityAdapter());
       Hive.registerAdapter(UserBadgeAdapter());
+      
+      Hive.registerAdapter(WorkoutTemplateAdapter());
+      Hive.registerAdapter(WorkoutTemplateExerciseAdapter());
+      Hive.registerAdapter(WorkoutTemplateCategoryAdapter());
+      Hive.registerAdapter(WorkoutTemplateDifficultyAdapter());
 
       // Abrir boxes
       _userBox = await Hive.openBox<User>(_userBoxName);
@@ -53,6 +60,7 @@ class HiveService {
       _weightEntriesBox = await Hive.openBox<WeightEntry>(_weightEntriesBoxName);
       _badgesBox = await Hive.openBox<Badge>(_badgesBoxName);
       _userBadgesBox = await Hive.openBox<UserBadge>(_userBadgesBoxName);
+      _workoutTemplatesBox = await Hive.openBox<WorkoutTemplate>('workout_templates');
     } catch (e) {
       print('Erro na inicialização do Hive: $e');
       rethrow;
@@ -230,7 +238,6 @@ class HiveService {
     final user = getUser(userId);
     if (user == null) return {};
     
-    final workouts = getUserWorkouts(userId);
     final badges = getUserBadges(userId);
     
     return {
@@ -261,6 +268,37 @@ class HiveService {
     return sqrt(totalXP / 100).floor() + 1;
   }
 
+  // Workout Templates
+  static Box<WorkoutTemplate> get workoutTemplatesBox => Hive.box<WorkoutTemplate>('workout_templates');
+  
+  /// Salva template de treino
+  static Future<void> saveWorkoutTemplate(WorkoutTemplate template) async {
+    await workoutTemplatesBox.put(template.id, template);
+  }
+  
+  /// Salva múltiplos templates
+  static Future<void> saveWorkoutTemplates(List<WorkoutTemplate> templates) async {
+    final Map<String, WorkoutTemplate> templateMap = {
+      for (var template in templates) template.id: template
+    };
+    await workoutTemplatesBox.putAll(templateMap);
+  }
+  
+  /// Obtém todos os templates
+  static List<WorkoutTemplate> getAllWorkoutTemplates() {
+    return workoutTemplatesBox.values.toList();
+  }
+  
+  /// Obtém template por ID
+  static WorkoutTemplate? getWorkoutTemplate(String templateId) {
+    return workoutTemplatesBox.get(templateId);
+  }
+  
+  /// Deleta template
+  static Future<void> deleteWorkoutTemplate(String templateId) async {
+    await workoutTemplatesBox.delete(templateId);
+  }
+
   static Future<void> close() async {
     await userBox.close();
     await exercisesBox.close();
@@ -268,5 +306,6 @@ class HiveService {
     await weightEntriesBox.close();
     await badgesBox.close();
     await userBadgesBox.close();
+    await workoutTemplatesBox.close();
   }
 }

@@ -1,14 +1,17 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../core/services/hive_service.dart';
 import '../../core/services/exercise_seed.dart';
 import '../../core/services/badge_seed.dart';
+import '../../core/services/workout_template_seed.dart';
 import '../../shared/models/user.dart';
 import '../../shared/models/exercise.dart';
 import '../../shared/models/workout.dart';
 import '../../shared/models/weight_entry.dart';
-import '../../shared/models/badge.dart';
+import '../../shared/models/badge.dart' as models;
 import '../../shared/models/user_badge.dart';
+import '../../shared/models/workout_template.dart';
 
 // Hive Service Provider
 final hiveServiceProvider = Provider<HiveService>((ref) => HiveService());
@@ -183,10 +186,6 @@ class WorkoutsNotifier extends StateNotifier<List<Workout>> {
   Future<void> addWorkout(Workout workout) async {
     await HiveService.saveWorkout(workout);
     state = HiveService.getAllWorkouts();
-    
-    // TODO: Integrar com gamificação quando tivermos o sistema de usuários
-    // final gamificationNotifier = ref.read(gamificationNotifierProvider.notifier);
-    // await gamificationNotifier.addWorkoutXP(userId, workout);
   }
 
   Future<void> updateWorkout(Workout workout) async {
@@ -227,6 +226,16 @@ class WeightEntriesNotifier extends StateNotifier<List<WeightEntry>> {
     state = HiveService.getAllWeightEntries();
   }
 
+  Future<void> addWeightEntryByValue(double weight) async {
+    final entry = WeightEntry(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      weight: weight,
+      date: DateTime.now(),
+    );
+    await HiveService.saveWeightEntry(entry);
+    state = HiveService.getAllWeightEntries();
+  }
+
   Future<void> updateWeightEntry(WeightEntry entry) async {
     await HiveService.saveWeightEntry(entry);
     state = HiveService.getAllWeightEntries();
@@ -248,11 +257,11 @@ class WeightEntriesNotifier extends StateNotifier<List<WeightEntry>> {
 }
 
 // Badges Provider
-final badgesProvider = StateNotifierProvider<BadgesNotifier, List<Badge>>((ref) {
+final badgesProvider = StateNotifierProvider<BadgesNotifier, List<models.Badge>>((ref) {
   return BadgesNotifier();
 });
 
-class BadgesNotifier extends StateNotifier<List<Badge>> {
+class BadgesNotifier extends StateNotifier<List<models.Badge>> {
   BadgesNotifier() : super([]) {
     _loadBadges();
   }
@@ -272,8 +281,13 @@ class BadgesNotifier extends StateNotifier<List<Badge>> {
     state = seedBadges;
   }
 
-  Badge? getBadgeById(String id) {
+  models.Badge? getBadgeById(String id) {
     return HiveService.getBadge(id);
+  }
+
+  Future<void> addBadge(models.Badge badge) async {
+    await HiveService.saveBadge(badge);
+    state = HiveService.getAllBadges();
   }
 }
 
@@ -299,5 +313,93 @@ class UserBadgesNotifier extends StateNotifier<List<UserBadge>> {
 
   List<UserBadge> getUserBadges(String userId) {
     return HiveService.getUserBadges(userId);
+  }
+}
+
+// Theme Mode Provider
+final themeModeProvider = StateNotifierProvider<ThemeModeNotifier, ThemeMode>((ref) {
+  return ThemeModeNotifier();
+});
+
+class ThemeModeNotifier extends StateNotifier<ThemeMode> {
+  ThemeModeNotifier() : super(ThemeMode.system) {
+    _loadThemeMode();
+  }
+
+  Future<void> _loadThemeMode() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final themeModeIndex = prefs.getInt('theme_mode') ?? 0;
+      state = ThemeMode.values[themeModeIndex];
+    } catch (e) {
+      // Se houver erro, mantém o tema do sistema
+      state = ThemeMode.system;
+    }
+  }
+
+  Future<void> setThemeMode(ThemeMode themeMode) async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setInt('theme_mode', themeMode.index);
+      state = themeMode;
+    } catch (e) {
+      // Se houver erro, apenas atualiza o state
+      state = themeMode;
+    }
+  }
+}
+
+// Gamification Provider - Importado do arquivo dedicado
+
+// Workout Templates Provider
+final workoutTemplatesProvider = StateNotifierProvider<WorkoutTemplatesNotifier, List<WorkoutTemplate>>((ref) {
+  return WorkoutTemplatesNotifier();
+});
+
+class WorkoutTemplatesNotifier extends StateNotifier<List<WorkoutTemplate>> {
+  WorkoutTemplatesNotifier() : super([]) {
+    _loadTemplates();
+  }
+
+  void _loadTemplates() {
+    state = HiveService.getAllWorkoutTemplates();
+    
+    // Se não há templates, carrega o seed
+    if (state.isEmpty) {
+      _loadSeedTemplates();
+    }
+  }
+
+  void _loadSeedTemplates() {
+    final seedTemplates = WorkoutTemplateSeed.getTemplates();
+    HiveService.saveWorkoutTemplates(seedTemplates);
+    state = seedTemplates;
+  }
+
+  Future<void> addTemplate(WorkoutTemplate template) async {
+    await HiveService.saveWorkoutTemplate(template);
+    state = HiveService.getAllWorkoutTemplates();
+  }
+
+  Future<void> updateTemplate(WorkoutTemplate template) async {
+    await HiveService.saveWorkoutTemplate(template);
+    state = HiveService.getAllWorkoutTemplates();
+  }
+
+  Future<void> deleteTemplate(String templateId) async {
+    await HiveService.deleteWorkoutTemplate(templateId);
+    state = HiveService.getAllWorkoutTemplates();
+  }
+
+  List<WorkoutTemplate> getTemplatesByCategory(WorkoutTemplateCategory category) {
+    return state.where((template) => template.category == category).toList();
+  }
+
+  List<WorkoutTemplate> getTemplatesByDifficulty(WorkoutTemplateDifficulty difficulty) {
+    return state.where((template) => template.difficulty == difficulty).toList();
+  }
+
+  List<WorkoutTemplate> getCustomTemplates() {
+    return state.where((template) => template.isCustom).toList();
   }
 }
